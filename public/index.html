@@ -1,83 +1,164 @@
 <!DOCTYPE html>
-
-<html>
-
+<html lang="ja">
 <head>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#4285f4">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Bald Eagle">
+    <link rel="apple-touch-icon" href="/logo.png">
     <link rel="stylesheet" href="style.css">
     <script src="script.js"></script>
+    
+    <!-- Service Worker登録 -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('🦅 Bald Eagle Service Worker registered:', registration);
+                    })
+                    .catch(error => {
+                        console.log('❌ Service Worker registration failed:', error);
+                    });
+            });
+        }
+    </script>
 
-    <title>Rammerhead Proxy</title>
+    <title>Bald Eagle - 高速ウェブプロキシ</title>
+    <meta name="description" content="Bald Eagle - シンプルで高速なウェブプロキシサービス。Chrome風のクリーンなデザイン。">
 </head>
 
 <body>
-    <header>
-        <img src="logo.png" />
-        <h1>Rammerhead Proxy</h1>
-    </header>
-    <div class="container mb-5">
-        <p class="mt-3 mb-3 font-weight">Join the <a href="https://discord.gg/VNT4E7gN5Y">Discord server</a> for updates
-            or just chat about life</p>
-        <p class="mb-0 font-weight-bold">Notice: inactive sessions will be deleted after 3 days.</p>
-        <p class="mb-3 font-weight-bold">Notice 2: Treat every session id like an isolated incognito browser that
-            belongs only to you. DO NOT SHARE THE SESSION ID. All logins that you make with the session id will be saved
-            in that session. Anyone that has your session id or session url CAN ACCESS your logged in sites.</p>
-        <p class="mb-3 font-weight-bold text-danger" id="error-text" style="display: none">Error: some text</p>
-        <div class="input-group mb-2" id="password-wrapper" style="display: none">
-            <div class="input-group-prepend">
-                <span class="input-group-text">Enter password</span>
-            </div>
-            <input type="password" class="form-control" id="session-password"
-                placeholder="Password is given by host of this site.">
-        </div>
-        <div class="input-group mb-2">
-            <div class="input-group-prepend">
-                <span class="input-group-text">Enter URL</span>
-            </div>
-            <input type="text" class="form-control" id="session-url" placeholder="https://www.google.com/">
-            <div class="input-group-append">
-                <button class="btn btn-success" id="session-go">Go!</button>
-            </div>
-        </div>
-        <div class="input-group mb-4">
-            <div class="input-group-prepend">
-                <span class="input-group-text">Session ID</span>
-            </div>
-            <input readonly type="text" class="form-control disable-text" id="session-id"
-                placeholder="click onn 'Create new session ID' or 'Fill in existing session ID' from below">
-            <div class="input-group-append">
-                <button class="btn btn-secondary" id="session-create-btn" type="button">Create new session ID</button>
-            </div>
-        </div>
-        <button class="btn btn-outline-secondary" id="session-advanced-toggle">Show advanced options</button>
-        <div class="mt-2 mb-4" id="session-advanced-container" style="display: none">
-            <div class="form-check mb-1">
-                <input class="form-check-input" type="checkbox" value="" id="session-shuffling" checked>
-                <label class="form-check-label" for="session-shuffling">Enable URL Shuffling</label>
-            </div>
-            <div class="input-group mb-3">
-                <div class="input-group-prepend">
-                    <span class="input-group-text">HTTP Proxy</span>
-                </div>
-                <input type="text" class="form-control" id="session-httpproxy"
-                    placeholder="http://username:password@proxyipaddress:proxyport">
-            </div>
-        </div>
+    <!-- テーマ切り替えボタン -->
+    <div class="theme-toggle" id="theme-toggle" title="テーマを切り替え">
+        🌙
     </div>
-    <div class="row justify-content-center m-0">
-        <table class="table w-75 table-striped table-bordered">
-            <thead>
-                <tr>
-                    <th>Session ID</th>
-                    <th>Created on</th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
-    </div>
-</body>
 
+    <header>
+        <img src="logo.png" alt="Bald Eagle" />
+        <h1>Bald Eagle</h1>
+        <p>高速・シンプルなウェブプロキシ</p>
+    </header>
+
+    <div class="container">
+        <!-- メイン入力エリア -->
+        <div class="card">
+            <div class="alert alert-info">
+                <strong>新機能:</strong> Chrome風の高速デザインでより使いやすくなりました
+            </div>
+
+            <!-- エラー表示 -->
+            <p class="text-danger" id="error-text" style="display: none">エラー: テキスト</p>
+
+            <!-- パスワード入力 -->
+            <div class="input-group" id="password-wrapper" style="display: none">
+                <span class="input-group-text">🔒 パスワード</span>
+                <input type="password" class="form-control" id="session-password"
+                    placeholder="管理者から提供されたパスワードを入力">
+            </div>
+
+            <!-- URL入力 -->
+            <div class="input-group">
+                <span class="input-group-text">🌐 URL</span>
+                <input type="text" class="form-control" id="session-url" 
+                       placeholder="https://www.google.com/" 
+                       autocomplete="url" list="url-suggestions">
+                <button class="btn btn-primary" id="session-go">
+                    <span id="go-text">アクセス</span>
+                    <span id="go-loading" style="display: none;" class="loading"></span>
+                </button>
+            </div>
+
+            <!-- URL候補リスト -->
+            <datalist id="url-suggestions">
+                <option value="https://www.google.com/">
+                <option value="https://www.youtube.com/">
+                <option value="https://www.twitter.com/">
+                <option value="https://www.github.com/">
+                <option value="https://www.wikipedia.org/">
+            </datalist>
+
+            <!-- セッションID管理 -->
+            <div class="input-group">
+                <span class="input-group-text">🔑 セッション</span>
+                <input readonly type="text" class="form-control" id="session-id"
+                    placeholder="新しいセッションを作成してください">
+                <button class="btn btn-secondary" id="session-create-btn" type="button">新規作成</button>
+            </div>
+
+            <!-- 詳細オプション -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <button class="btn btn-outline-secondary btn-sm" id="session-advanced-toggle">詳細オプション</button>
+                <button class="btn btn-outline-secondary btn-sm" id="add-bookmark" style="display: none;">
+                    ブックマーク追加
+                </button>
+            </div>
+            
+            <div class="mt-2" id="session-advanced-container" style="display: none">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="session-shuffling" checked>
+                    <label class="form-check-label" for="session-shuffling">
+                        URLシャッフリングを有効にする
+                        <small class="text-muted d-block">セキュリティを向上させます</small>
+                    </label>
+                </div>
+                <div class="input-group">
+                    <span class="input-group-text">🌐 HTTPプロキシ</span>
+                    <input type="text" class="form-control" id="session-httpproxy"
+                        placeholder="http://user:pass@proxy:port">
+                </div>
+            </div>
+        </div>
+
+        <!-- ブックマーク -->
+        <div class="card">
+            <h5>⭐ ブックマーク</h5>
+            <div id="bookmarks-container">
+                <p class="text-muted">まだブックマークがありません</p>
+            </div>
+        </div>
+
+        <!-- 統計情報 -->
+        <div class="card">
+            <h5>📊 利用状況</h5>
+            <div class="d-flex justify-content-between">
+                <span>アクティブセッション: <strong id="active-sessions">0</strong></span>
+                <span>今日の接続数: <strong id="daily-connections">0</strong></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- セッション管理 -->
+    <div class="container">
+        <div class="card">
+            <h5>📁 セッション管理</h5>
+            <div style="overflow-x: auto;">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>セッションID</th>
+                            <th>作成日時</th>
+                            <th>最終アクセス</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- フッター -->
+    <footer class="text-center mt-3 mb-3">
+        <p class="text-muted small">
+            &copy; 2025 Bald Eagle - Enhanced Rammerhead Proxy<br>
+            <a href="https://discord.gg/VNT4E7gN5Y" target="_blank" class="text-muted">サポート</a>
+        </p>
+    </footer>
+</body>
 </html>

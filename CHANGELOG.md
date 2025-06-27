@@ -1,3 +1,54 @@
+# 🦅 Bald Eagle Changelog
+
+## Version 1.0.0 - "Eagle Soars" (2025-06-27)
+
+### 🎉 Major Features
+- **Complete Japanese Localization** - All UI elements, messages, and documentation now available in Japanese
+- **Bookmark System** - Save and organize frequently visited websites
+- **Theme Switching** - Toggle between dark and light modes with persistent settings
+- **Usage Statistics** - Real-time display of active sessions and daily connections
+- **Progressive Web App** - Full PWA support with offline capabilities and app-like experience
+
+### 🚀 Performance Improvements
+- **Enhanced Caching** - Doubled cache size (10GB) for faster loading
+- **Service Worker** - Offline support and faster asset loading
+- **Optimized UI** - Reduced render times with efficient CSS and animations
+- **Async Operations** - Non-blocking UI operations with loading indicators
+
+### 🎨 Design Overhaul
+- **Modern Gradient Backgrounds** - Beautiful visual effects with glassmorphism
+- **Responsive Design** - Optimized for all screen sizes from mobile to desktop
+- **Smooth Animations** - Enhanced user experience with CSS transitions
+- **Accessibility** - Improved contrast ratios and keyboard navigation
+
+### ✨ User Experience
+- **Keyboard Shortcuts** - Ctrl+Enter to go, Ctrl+N for new session
+- **Auto-completion** - Suggested URLs for popular websites
+- **Better Error Messages** - Clear, localized error descriptions
+- **Session Management** - Enhanced session table with last access times
+
+### 🔧 Technical Changes
+- **Code Structure** - Modular JavaScript with improved maintainability
+- **Configuration** - Enhanced config options for better customization
+- **Security** - Improved session isolation and IP restrictions
+- **Documentation** - Comprehensive Japanese documentation
+
+### 🐛 Bug Fixes
+- Fixed session persistence issues
+- Improved error handling for network failures
+- Better mobile touch interactions
+- Fixed CSS compatibility issues
+
+### 📱 Mobile Improvements
+- **Touch-friendly Interface** - Larger touch targets and improved gestures
+- **Mobile Optimization** - Faster loading on mobile networks
+- **PWA Installation** - Add to home screen functionality
+- **Offline Mode** - Basic functionality available without internet
+
+---
+
+# Original Rammerhead Changelog
+
 ## v1.2.64
 
 - catch websocket errors

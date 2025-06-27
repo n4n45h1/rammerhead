@@ -1,7 +1,154 @@
 (function () {
+    // Bald Eagle - Enhanced Rammerhead Proxy
     const mod = (n, m) => ((n % m) + m) % m;
     const baseDictionary = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz~-';
     const shuffledIndicator = '_rhs';
+    
+    // 日本語メッセージ
+    const messages = {
+        error: 'エラーが発生しました: ',
+        serverError: 'サーバーとの通信に失敗しました',
+        unexpectedResponse: 'サーバーから予期しない応答がありました: ',
+        sessionNotFound: 'セッションが見つかりません。新しいセッションを作成するか、削除してください',
+        sessionRequired: 'セッションIDを先に生成してください',
+        bookmarkAdded: 'ブックマークに追加しました',
+        bookmarkRemoved: 'ブックマークから削除しました',
+        confirmDelete: 'このセッションを削除してもよろしいですか？',
+        fillSession: '既存セッションを使用',
+        deleteSession: '削除',
+        lastAccess: '最終アクセス',
+        never: 'なし'
+    };
+
+    // テーマ管理（軽量化）
+    const themeManager = {
+        init() {
+            const savedTheme = localStorage.getItem('bald-eagle-theme') || 'light';
+            this.setTheme(savedTheme);
+            
+            document.getElementById('theme-toggle').addEventListener('click', () => {
+                const currentTheme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                this.setTheme(newTheme);
+            });
+        },
+        
+        setTheme(theme) {
+            document.body.className = theme + '-mode';
+            localStorage.setItem('bald-eagle-theme', theme);
+            
+            const toggle = document.getElementById('theme-toggle');
+            toggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+            toggle.title = theme === 'dark' ? 'ライトモードに切り替え' : 'ダークモードに切り替え';
+        }
+    };
+
+    // ブックマーク管理（軽量化）
+    const bookmarkManager = {
+        key: 'bald-eagle-bookmarks',
+        
+        get() {
+            try {
+                return JSON.parse(localStorage.getItem(this.key)) || [];
+            } catch {
+                return [];
+            }
+        },
+        
+        save(bookmarks) {
+            localStorage.setItem(this.key, JSON.stringify(bookmarks));
+        },
+        
+        add(url, title = '') {
+            const bookmarks = this.get();
+            const newBookmark = {
+                url,
+                title: title || new URL(url).hostname,
+                addedAt: Date.now()
+            };
+            
+            if (!bookmarks.find(b => b.url === url)) {
+                bookmarks.unshift(newBookmark);
+                if (bookmarks.length > 10) bookmarks.pop(); // 最大10個まで
+                this.save(bookmarks);
+                this.render();
+                this.showNotification('ブックマークに追加しました');
+            }
+        },
+        
+        remove(url) {
+            const bookmarks = this.get().filter(b => b.url !== url);
+            this.save(bookmarks);
+            this.render();
+            this.showNotification('ブックマークから削除しました');
+        },
+        
+        render() {
+            const container = document.getElementById('bookmarks-container');
+            const bookmarks = this.get();
+            
+            if (bookmarks.length === 0) {
+                container.innerHTML = '<p class="text-muted">まだブックマークがありません</p>';
+                return;
+            }
+            
+            container.innerHTML = bookmarks.map(bookmark => `
+                <div class="d-flex justify-content-between align-items-center mb-2" 
+                     style="padding: 0.5rem; background: var(--surface-color); border-radius: var(--radius);">
+                    <div style="cursor: pointer;" onclick="bookmarkManager.useBookmark('${bookmark.url}')">
+                        <strong>${bookmark.title}</strong>
+                        <small class="text-muted d-block">${bookmark.url}</small>
+                    </div>
+                    <button class="btn btn-outline-danger btn-sm" onclick="bookmarkManager.remove('${bookmark.url}')">
+                        ×
+                    </button>
+                </div>
+            `).join('');
+        },
+        
+        useBookmark(url) {
+            document.getElementById('session-url').value = url;
+            document.getElementById('session-url').focus();
+        },
+        
+        showNotification(message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed; top: 20px; right: 80px; z-index: 1050;
+                background: var(--primary-color); color: white; padding: 0.75rem 1rem;
+                border-radius: var(--radius); box-shadow: var(--shadow);
+                font-size: 0.875rem; opacity: 0; transition: opacity 0.3s ease;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            setTimeout(() => notification.style.opacity = '1', 10);
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => notification.remove(), 300);
+            }, 2000);
+        }
+    };
+
+    // 統計情報（軽量化）
+    const statsManager = {
+        updateStats() {
+            const sessions = sessionIdsStore.get();
+            document.getElementById('active-sessions').textContent = sessions.length;
+            
+            const today = new Date().toDateString();
+            const count = parseInt(localStorage.getItem('daily-connections-' + today)) || 0;
+            document.getElementById('daily-connections').textContent = count;
+        },
+        
+        incrementDailyConnections() {
+            const today = new Date().toDateString();
+            let count = parseInt(localStorage.getItem('daily-connections-' + today)) || 0;
+            localStorage.setItem('daily-connections-' + today, ++count);
+            this.updateStats();
+        }
+    };
+
     const generateDictionary = function () {
         let str = '';
         const split = baseDictionary.split('');
@@ -10,6 +157,7 @@
         }
         return str;
     };
+
     class StrShuffler {
         constructor(dictionary = generateDictionary()) {
             this.dictionary = dictionary;
@@ -63,20 +211,21 @@
         var element = document.getElementById('error-text');
         if (err) {
             element.style.display = 'block';
-            element.textContent = 'An error occurred: ' + err;
+            element.textContent = messages.error + err;
         } else {
             element.style.display = 'none';
             element.textContent = '';
         }
     }
+
     function getPassword() {
         var element = document.getElementById('session-password');
         return element ? element.value : '';
     }
+
     function get(url, callback, shush = false) {
         var pwd = getPassword();
         if (pwd) {
-            // really cheap way of adding a query parameter
             if (url.includes('?')) {
                 url += '&pwd=' + pwd;
             } else {
@@ -89,16 +238,14 @@
         request.send();
 
         request.onerror = function () {
-            if (!shush) setError('Cannot communicate with the server');
+            if (!shush) setError(messages.serverError);
         };
         request.onload = function () {
             if (request.status === 200) {
                 callback(request.responseText);
             } else {
                 if (!shush)
-                    setError(
-                        'unexpected server response to not match "200". Server says "' + request.responseText + '"'
-                    );
+                    setError(messages.unexpectedResponse + request.responseText);
             }
         };
     }
@@ -117,7 +264,7 @@
                 (httpProxy ? '&httpProxy=' + encodeURIComponent(httpProxy) : '') +
                 '&enableShuffling=' + (enableShuffling ? '1' : '0'),
                 function (res) {
-                    if (res !== 'Success') return setError('unexpected response from server. received ' + res);
+                    if (res !== 'Success') return setError(messages.unexpectedResponse + res);
                     callback();
                 }
             );
@@ -126,7 +273,7 @@
             get('/sessionexists?id=' + encodeURIComponent(id), function (res) {
                 if (res === 'exists') return callback(true);
                 if (res === 'not found') return callback(false);
-                setError('unexpected response from server. received' + res);
+                setError(messages.unexpectedResponse + res);
             });
         },
         deletesession(id, callback) {
@@ -134,7 +281,7 @@
                 if (exists) {
                     get('/deletesession?id=' + id, function (res) {
                         if (res !== 'Success' && res !== 'not found')
-                            return setError('unexpected response from server. received ' + res);
+                            return setError(messages.unexpectedResponse + res);
                         callback();
                     });
                 } else {
@@ -149,8 +296,8 @@
         }
     };
 
-    var localStorageKey = 'rammerhead_sessionids';
-    var localStorageKeyDefault = 'rammerhead_default_sessionid';
+    var localStorageKey = 'bald-eagle-sessionids';
+    var localStorageKeyDefault = 'bald-eagle-default-sessionid';
     var sessionIdsStore = {
         get() {
             var rawData = localStorage.getItem(localStorageKey);
@@ -171,7 +318,7 @@
             var sessionId = localStorage.getItem(localStorageKeyDefault);
             if (sessionId) {
                 var data = sessionIdsStore.get();
-                data.filter(function (e) {
+                data = data.filter(function (e) {
                     return e.id === sessionId;
                 });
                 if (data.length) return data[0];
@@ -186,36 +333,50 @@
     function renderSessionTable(data) {
         var tbody = document.querySelector('tbody');
         while (tbody.firstChild && !tbody.firstChild.remove());
+        
         for (var i = 0; i < data.length; i++) {
             var tr = document.createElement('tr');
             appendIntoTr(data[i].id);
             appendIntoTr(data[i].createdOn);
+            appendIntoTr(data[i].lastAccess || messages.never);
+
+            var actionsDiv = document.createElement('div');
+            actionsDiv.className = 'd-flex gap-2';
 
             var fillInBtn = document.createElement('button');
-            fillInBtn.textContent = 'Fill in existing session ID';
-            fillInBtn.className = 'btn btn-outline-primary';
+            fillInBtn.textContent = messages.fillSession;
+            fillInBtn.className = 'btn btn-outline-primary btn-sm';
             fillInBtn.onclick = index(i, function (idx) {
                 setError();
                 sessionIdsStore.setDefault(data[idx].id);
                 loadSettings(data[idx]);
+                // 最終アクセス時間を更新
+                data[idx].lastAccess = new Date().toLocaleString();
+                sessionIdsStore.set(data);
+                renderSessionTable(data);
             });
-            appendIntoTr(fillInBtn);
+            actionsDiv.appendChild(fillInBtn);
 
             var deleteBtn = document.createElement('button');
-            deleteBtn.textContent = 'Delete';
-            deleteBtn.className = 'btn btn-outline-danger';
+            deleteBtn.textContent = messages.deleteSession;
+            deleteBtn.className = 'btn btn-outline-danger btn-sm';
             deleteBtn.onclick = index(i, function (idx) {
-                setError();
-                api.deletesession(data[idx].id, function () {
-                    data.splice(idx, 1)[0];
-                    sessionIdsStore.set(data);
-                    renderSessionTable(data);
-                });
+                if (confirm(messages.confirmDelete)) {
+                    setError();
+                    api.deletesession(data[idx].id, function () {
+                        data.splice(idx, 1)[0];
+                        sessionIdsStore.set(data);
+                        renderSessionTable(data);
+                        statsManager.updateStats();
+                    });
+                }
             });
-            appendIntoTr(deleteBtn);
-
+            actionsDiv.appendChild(deleteBtn);
+            
+            appendIntoTr(actionsDiv);
             tbody.appendChild(tr);
         }
+        
         function appendIntoTr(stuff) {
             var td = document.createElement('td');
             if (typeof stuff === 'object') {
@@ -229,29 +390,40 @@
             return func.bind(null, i);
         }
     }
+
     function loadSettings(session) {
         document.getElementById('session-id').value = session.id;
         document.getElementById('session-httpproxy').value = session.httpproxy || '';
         document.getElementById('session-shuffling').checked = typeof session.enableShuffling === 'boolean' ? session.enableShuffling : true;
     }
+
     function loadSessions() {
         var sessions = sessionIdsStore.get();
         var defaultSession = sessionIdsStore.getDefault();
         if (defaultSession) loadSettings(defaultSession);
         renderSessionTable(sessions);
+        statsManager.updateStats();
     }
+
     function addSession(id) {
         var data = sessionIdsStore.get();
-        data.unshift({ id: id, createdOn: new Date().toLocaleString() });
+        data.unshift({ 
+            id: id, 
+            createdOn: new Date().toLocaleString(),
+            lastAccess: new Date().toLocaleString()
+        });
         sessionIdsStore.set(data);
         renderSessionTable(data);
+        statsManager.updateStats();
     }
+
     function editSession(id, httpproxy, enableShuffling) {
         var data = sessionIdsStore.get();
         for (var i = 0; i < data.length; i++) {
             if (data[i].id === id) {
                 data[i].httpproxy = httpproxy;
                 data[i].enableShuffling = enableShuffling;
+                data[i].lastAccess = new Date().toLocaleString();
                 sessionIdsStore.set(data);
                 return;
             }
@@ -259,24 +431,52 @@
         throw new TypeError('cannot find ' + id);
     }
 
+    function showLoadingState(show) {
+        const goText = document.getElementById('go-text');
+        const goLoading = document.getElementById('go-loading');
+        const goButton = document.getElementById('session-go');
+        
+        if (show) {
+            goText.style.display = 'none';
+            goLoading.style.display = 'inline-block';
+            goButton.disabled = true;
+        } else {
+            goText.style.display = 'inline';
+            goLoading.style.display = 'none';
+            goButton.disabled = false;
+        }
+    }
+
+    // メインポート確認（Codespaces対応）
     get('/mainport', function (data) {
+        // Codespacesの場合はポート変更を行わない
+        if (window.location.hostname.includes('.app.github.dev')) {
+            console.log('🦅 Codespaces環境を検出しました');
+            return;
+        }
+        
         var defaultPort = window.location.protocol === 'https:' ? 443 : 80;
         var currentPort = window.location.port || defaultPort;
         var mainPort = data || defaultPort;
         if (currentPort != mainPort) window.location.port = mainPort;
     });
 
+    // パスワード確認
     api.needpassword(doNeed => {
         if (doNeed) {
             document.getElementById('password-wrapper').style.display = '';
         }
     });
+
+    // ページ読み込み完了時の初期化
     window.addEventListener('load', function () {
+        // 各マネージャーの初期化
+        themeManager.init();
+        bookmarkManager.render();
         loadSessions();
 
         var showingAdvancedOptions = false;
         document.getElementById('session-advanced-toggle').onclick = function () {
-            // eslint-disable-next-line no-cond-assign
             document.getElementById('session-advanced-container').style.display = (showingAdvancedOptions =
                 !showingAdvancedOptions)
                 ? 'block'
@@ -285,24 +485,60 @@
 
         document.getElementById('session-create-btn').onclick = function () {
             setError();
+            showLoadingState(true);
             api.newsession(function (id) {
                 addSession(id);
                 document.getElementById('session-id').value = id;
                 document.getElementById('session-httpproxy').value = '';
+                showLoadingState(false);
             });
         };
+
+        // ブックマーク追加ボタン
+        document.getElementById('add-bookmark').onclick = function () {
+            const url = document.getElementById('session-url').value;
+            if (url) {
+                bookmarkManager.add(url);
+            }
+        };
+
+        // URL入力時のブックマークボタン表示制御
+        document.getElementById('session-url').addEventListener('input', function () {
+            const addBookmarkBtn = document.getElementById('add-bookmark');
+            const url = this.value.trim();
+            if (url && url.startsWith('http')) {
+                addBookmarkBtn.style.display = 'inline-block';
+            } else {
+                addBookmarkBtn.style.display = 'none';
+            }
+        });
+
         function go() {
             setError();
+            showLoadingState(true);
+            
             var id = document.getElementById('session-id').value;
             var httpproxy = document.getElementById('session-httpproxy').value;
             var enableShuffling = document.getElementById('session-shuffling').checked;
             var url = document.getElementById('session-url').value || 'https://www.google.com/';
-            if (!id) return setError('must generate a session id first');
+            
+            if (!id) {
+                showLoadingState(false);
+                return setError(messages.sessionRequired);
+            }
+            
             api.sessionexists(id, function (value) {
-                if (!value) return setError('session does not exist. try deleting or generating a new session');
+                if (!value) {
+                    showLoadingState(false);
+                    return setError(messages.sessionNotFound);
+                }
+                
                 api.editsession(id, httpproxy, enableShuffling, function () {
                     editSession(id, httpproxy, enableShuffling);
+                    statsManager.incrementDailyConnections();
+                    
                     api.shuffleDict(id, function (shuffleDict) {
+                        showLoadingState(false);
                         if (!shuffleDict) {
                             window.location.href = '/' + id + '/' + url;
                         } else {
@@ -313,9 +549,21 @@
                 });
             });
         }
+
         document.getElementById('session-go').onclick = go;
         document.getElementById('session-url').onkeydown = function (event) {
             if (event.key === 'Enter') go();
         };
+
+        // キーボードショートカット
+        document.addEventListener('keydown', function (event) {
+            if (event.ctrlKey && event.key === 'Enter') {
+                go();
+            }
+            if (event.ctrlKey && event.key === 'n') {
+                event.preventDefault();
+                document.getElementById('session-create-btn').click();
+            }
+        });
     });
 })();

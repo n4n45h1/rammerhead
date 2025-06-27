@@ -7,9 +7,16 @@ const RammerheadJSFileCache = require('./classes/RammerheadJSFileCache.js');
 const enableWorkers = os.cpus().length !== 1;
 
 module.exports = {
+    //// BALD EAGLE CONFIGURATION ////
+    
+    // プロジェクト情報
+    projectName: 'Bald Eagle',
+    version: '1.0.0',
+    description: 'Enhanced Rammerhead Proxy with Japanese support and modern features',
+
     //// HOSTING CONFIGURATION ////
 
-    bindingAddress: '127.0.0.1',
+    bindingAddress: '0.0.0.0', // Codespaces対応: 全てのIPからのアクセスを許可
     port: 8080,
     crossDomainPort: 8081,
     publicDir: path.join(__dirname, '../public'), // set to null to disable
@@ -22,17 +29,43 @@ module.exports = {
     // for more info, see https://nodejs.org/api/https.html#https_https_createserver_options_requestlistener
     ssl: null,
 
-    // this function's return object will determine how the client url rewriting will work.
-    // set them differently from bindingAddress and port if rammerhead is being served
-    // from a reverse proxy.
-    getServerInfo: () => ({ hostname: 'localhost', port: 8080, crossDomainPort: 8081, protocol: 'http:' }),
-    // example of non-hard-coding the hostname header
-    // getServerInfo: (req) => {
-    //     return { hostname: new URL('http://' + req.headers.host).hostname, port: 443, crossDomainPort: 8443, protocol: 'https: };
-    // },
+    // Codespaces対応: 動的ホスト名取得
+    getServerInfo: (req) => {
+        // Codespacesの環境変数をチェック
+        if (process.env.CODESPACE_NAME) {
+            const codespaceName = process.env.CODESPACE_NAME;
+            const hostname = `${codespaceName}-8080.app.github.dev`;
+            const crossDomainHostname = `${codespaceName}-8081.app.github.dev`;
+            
+            return { 
+                hostname: hostname,
+                port: 443, // Codespacesは443ポートでHTTPS
+                crossDomainPort: 443,
+                protocol: 'https:' 
+            };
+        }
+        
+        // ローカル環境の場合
+        if (req && req.headers.host) {
+            const host = req.headers.host;
+            const isLocalhost = host.includes('localhost') || host.includes('127.0.0.1');
+            
+            if (isLocalhost) {
+                return { 
+                    hostname: 'localhost', 
+                    port: 8080, 
+                    crossDomainPort: 8081, 
+                    protocol: 'http:' 
+                };
+            }
+        }
+        
+        // デフォルト
+        return { hostname: 'localhost', port: 8080, crossDomainPort: 8081, protocol: 'http:' };
+    },
 
     // enforce a password for creating new sessions. set to null to disable
-    password: 'sharkie4life',
+    password: null, // Bald Eagle: パスワードを無効化（必要に応じて設定）
 
     // disable or enable localStorage sync (turn off if clients send over huge localStorage data, resulting in huge memory usages)
     disableLocalStorageSync: false,
@@ -42,8 +75,8 @@ module.exports = {
 
     // caching options for js rewrites. (disk caching not recommended for slow HDD disks)
     // recommended: 50mb for memory, 5gb for disk
-    // jsCache: new RammerheadJSMemCache(5 * 1024 * 1024),
-    jsCache: new RammerheadJSFileCache(path.join(__dirname, '../cache-js'), 5 * 1024 * 1024 * 1024, 50000, enableWorkers),
+    // Bald Eagle: キャッシュサイズを増加して高速化
+    jsCache: new RammerheadJSFileCache(path.join(__dirname, '../cache-js'), 10 * 1024 * 1024 * 1024, 100000, enableWorkers),
 
     // whether to disable http2 support or not (from proxy to destination site).
     // disabling may reduce number of errors/memory, but also risk

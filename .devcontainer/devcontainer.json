@@ -1,0 +1,24 @@
+{
+  "name": "Bald Eagle Proxy",
+  "image": "mcr.microsoft.com/vscode/devcontainers/javascript-node:16",
+  "forwardPorts": [8080, 8081],
+  "portsAttributes": {
+    "8080": {
+      "label": "Bald Eagle Main",
+      "onAutoForward": "openBrowser"
+    },
+    "8081": {
+      "label": "Bald Eagle Cross Domain",
+      "onAutoForward": "ignore"
+    }
+  },
+  "postCreateCommand": "npm install",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.vscode-json",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  }
+}

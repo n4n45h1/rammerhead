@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "build": {
+    "rootDir": "public",
+    "command": "npm run build:pages",
+    "outputDir": "dist"
+  },
+  "functions": {
+    "directory": "functions",
+    "wrangler_config": "wrangler.toml"
+  },
+  "pages_build_output_dir": "dist"
+}

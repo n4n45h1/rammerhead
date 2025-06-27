@@ -1,0 +1,14 @@
+name = "bald-eagle-proxy"
+main = "functions/_worker.js"
+compatibility_date = "2023-12-01"
+
+[env.production.vars]
+NODE_ENV = "production"
+
+[[env.production.kv_namespaces]]
+binding = "SESSIONS"
+id = "your-kv-namespace-id"
+
+[build]
+command = "npm run build"
+cwd = "/"

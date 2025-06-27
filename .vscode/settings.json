@@ -1,0 +1,15 @@
+{
+  "version": "1.0",
+  "ports": {
+    "8080": {
+      "description": "Bald Eagle Main Port",
+      "visibility": "public",
+      "protocol": "https"
+    },
+    "8081": {
+      "description": "Bald Eagle Cross Domain Port", 
+      "visibility": "public",
+      "protocol": "https"
+    }
+  }
+}

@@ -92,6 +92,13 @@ module.exports = function setupRoutes(proxyServer, sessionStore, logger) {
     });
     proxyServer.GET('/mainport', (req, res) => {
         const serverInfo = config.getServerInfo(req);
+        
+        // Codespaces環境では常に443を返す（HTTPSポート）
+        if (process.env.CODESPACE_NAME || req.headers.host?.includes('.app.github.dev')) {
+            res.end('443');
+            return;
+        }
+        
         res.end((serverInfo.port || '').toString());
     });
 };

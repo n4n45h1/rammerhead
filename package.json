@@ -1,7 +1,7 @@
 {
-  "name": "rammerhead",
-  "version": "1.2.64",
-  "description": "User friendly web proxy powered by testcafe-hammerhead",
+  "name": "bald-eagle",
+  "version": "1.0.0",
+  "description": "A powerful and user-friendly web proxy, an enhanced version of Rammerhead.",
   "main": "src/index.js",
   "scripts": {
     "preinstall": "npm install --package-lock-only --ignore-scripts && npx npm-force-resolutions",

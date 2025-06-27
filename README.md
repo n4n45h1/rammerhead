@@ -1,38 +1,121 @@
-# rammerhead
+# 🦅 Bald Eagle
 
-> proxy based on testcafe-hammerhead (password is `sharkie4life`)
+> 高速・安全・使いやすい次世代ウェブプロキシ (Rammerhead ベース)
 
-Demo link: https://demo-opensource.rammerhead.org
+**Bald Eagle** は、元のRammerheadプロキシを大幅に強化し、日本語対応、モダンなUI、便利な新機能を追加した高性能プロキシサーバーです。
 
-Polished closed-source-for-now browser version: https://browser.rammerhead.org (more links by awesome community members in the discord server at the end of readme)
+## 🌟 主な特徴
 
+### ✨ 新機能
+- **日本語完全対応** - インターface全体が日本語で利用可能
+- **ブックマーク機能** - よく使うサイトを簡単に保存・アクセス
+- **テーマ切り替え** - ダークモード/ライトモードの切り替え
+- **利用統計** - アクティブセッション数や接続統計の表示
+- **キーボードショートカット** - より高速な操作が可能
+- **自動URL補完** - 人気サイトへの簡単アクセス
 
-## Supporting me and contributing
+### 🚀 性能向上
+- **拡張キャッシュ** - 従来の2倍のキャッシュサイズで高速化
+- **最適化されたUI** - レスポンシブデザインとスムーズなアニメーション
+- **非同期処理** - ローディング状態の可視化
 
-Server infrastructure costs money and developing this project consumes a lot of my time, so I would appreciate it greatly if you become a Patreon member: https://www.patreon.com/rammerhead
+### 🎨 モダンなデザイン
+- **グラデーション背景** - 美しいビジュアルエフェクト
+- **グラスモーフィズム** - 透明感のあるモダンなUI
+- **アニメーション** - 滑らかなトランジションとホバーエフェクト
+- **レスポンシブ** - スマートフォンからデスクトップまで最適化
 
+## 🛠️ インストールと実行
 
-## Who is this package for
+### 必要要件
+- Node.js v16以上
+- 4GB以上のRAM（推奨）
 
-Package is for those who want a fully-configurable proxy that works on many sites
+### セットアップ手順
 
-## Effectiveness of proxy
+1. **リポジトリをクローン**
+   ```bash
+   git clone <this-repository>
+   cd rammerhead
+   ```
 
-This proxy supports proxying
-- basically everything except google logins
+2. **依存関係をインストール**
+   ```bash
+   npm install
+   ```
 
-## Features of proxy
+3. **プロジェクトをビルド**
+   ```bash
+   npm run build
+   ```
 
-The proxy allows users to create a "session". When they access their session, their localStorage and cookies will be synced with rammerhead. This allows for accurately mocking cookied requests and conveniently save their logins even if they switch devices. This also enables users to configure a custom HTTP proxy server for rammerhead to connect to for the session.
+4. **設定をカスタマイズ（オプション）**
+   - `src/config.js` を編集するか
+   - ルートディレクトリに `config.js` を作成して設定を上書き
 
-## Installing and running
+5. **サーバーを起動**
+   ```bash
+   npm run start
+   ```
 
-Rammerhead recommends you to have at least **node v16** to be installed. Once you installed nodejs, clone the repo, then run `npm install` and `npm run build`.
+## 🔧 設定オプション
 
-After, configure your settings in [src/config.js](src/config.js). If you wish to consistently pull updates from this repo without the hassle of merging, create `config.js` in the root folder so they override the configs in `src/`.
+Bald Eagleは以下の追加設定オプションを提供します：
 
-Finally run the following to start rammerhead: `node src/server.js`
+```javascript
+module.exports = {
+    // プロジェクト情報
+    projectName: 'Bald Eagle',
+    version: '1.0.0',
+    
+    // パフォーマンス設定
+    jsCache: new RammerheadJSFileCache(
+        path.join(__dirname, '../cache-js'), 
+        10 * 1024 * 1024 * 1024, // 10GB キャッシュ
+        100000, // 最大ファイル数
+        enableWorkers
+    ),
+    
+    // セキュリティ設定
+    password: null, // デフォルトでパスワード無効
+    restrictSessionToIP: true,
+};
+```
 
-## Discord server
+## 🌐 対応サイト
 
-For any user-help non-issue related questions, especially pertaining to Rammerhead Browser, please ask them here: [Rammerhead Support Server](https://discord.gg/VNT4E7gN5Y).
+Bald Eagleは以下のサイトを含む、ほぼすべてのウェブサイトをサポートします：
+
+- ✅ YouTube、Twitter、Instagram
+- ✅ Wikipedia、Reddit、GitHub
+- ✅ ほとんどのストリーミングサービス
+- ✅ オンラインゲーム
+- ❌ Google ログイン（技術的制限）
+
+## 📱 使用方法
+
+1. **セッション作成** - 「新規作成」ボタンでセッションIDを生成
+2. **URL入力** - アクセスしたいサイトのURLを入力
+3. **ブックマーク** - よく使うサイトをブックマークに追加
+4. **テーマ切り替え** - 右上のボタンでダーク/ライトモードを切り替え
+
+## 🔒 セキュリティとプライバシー
+
+- **セッション分離** - 各セッションは完全に独立
+- **IP制限** - セッションは作成したIPアドレスでのみ使用可能
+- **自動削除** - 非アクティブなセッションは3日後に自動削除
+- **データ暗号化** - 通信データの暗号化
+
+## 🆘 サポート
+
+質問やサポートが必要な場合は、以下のDiscordサーバーにご参加ください：
+
+[Rammerhead Support Server](https://discord.gg/VNT4E7gN5Y)
+
+## 📄 ライセンス
+
+このプロジェクトはMITライセンスの下で公開されています。
+
+---
+
+**Bald Eagle** - 次世代のウェブプロキシ体験をお楽しみください！ 🦅
