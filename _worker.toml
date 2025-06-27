@@ -1,0 +1,32 @@
+# Cloudflare Pages専用設定
+# Pages Functions用設定ファイル
+
+# ビルドコマンド
+build = { command = "npm run build:pages", cwd = "/" }
+
+# 公開ディレクトリ
+publish = "public"
+
+# Node.js互換性
+node_compat = true
+
+# KV Namespace設定
+[env]
+NODE_ENV = "production"
+ENVIRONMENT = "cloudflare-pages"
+
+# プロダクション環境でのKV設定
+# Cloudflare Dashboardで実際のKV Namespace IDを設定してください
+[kv_namespaces]
+SESSIONS = "your-production-kv-id"
+
+# Functions設定
+[functions]
+directory = "functions"
+node_compat = true
+
+# ルーティング設定
+[routes]
+"/api/*" = "functions/[[path]].js"
+"/proxy/*" = "functions/[[path]].js"
+"/session/*" = "functions/[[path]].js"

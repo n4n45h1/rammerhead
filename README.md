@@ -58,6 +58,91 @@
    npm run start
    ```
 
+## 🚀 Cloudflare Pagesでのデプロイ
+
+**Bald Eagle**をCloudflare Pagesでホストする手順：
+
+### 1. 準備
+
+```bash
+# ビルドとPages用の準備
+npm run build:pages
+
+# または手動で
+npm run build
+npm run prepare:pages
+```
+
+### 2. Cloudflare Dashboard設定
+
+1. [Cloudflare Dashboard](https://dash.cloudflare.com/) にログイン
+2. **Pages** セクションに移動
+3. **Create a project** → **Connect to Git**
+4. GitHubリポジトリを選択
+
+### 3. ビルド設定
+
+```
+Build command: npm run build:pages
+Build output directory: public
+Root directory: /
+```
+
+### 4. 環境変数設定
+
+```
+NODE_ENV=production
+ENVIRONMENT=cloudflare-pages
+```
+
+### 5. KV Namespace作成
+
+```bash
+# Wrangler CLIでKV Namespace作成
+wrangler kv:namespace create "SESSIONS"
+wrangler kv:namespace create "SESSIONS" --preview
+```
+
+### 6. Pages Functions設定
+
+1. Pages設定で**Functions**タブに移動
+2. **KV namespace bindings**を追加:
+   - Variable name: `SESSIONS`
+   - KV namespace: 作成したNamespace ID
+
+### 7. カスタムドメイン（オプション）
+
+1. **Custom domains**タブでドメインを追加
+2. DNS設定でCNAMEレコードを追加
+
+### 🔧 ローカル開発
+
+```bash
+# Pages用ローカル開発サーバー
+npm run dev:pages
+
+# または直接Wranglerで
+wrangler pages dev public
+```
+
+### 📝 注意事項
+
+- **KV Namespace ID**: `wrangler.toml`の`your-kv-namespace-id`を実際のIDに変更
+- **セッション管理**: KVストレージで30分間のTTL
+- **プロキシ制限**: CloudflareのRequest制限に注意
+
+### 🌟 自動デプロイ
+
+GitHubにpushすると自動的にビルド・デプロイされます：
+
+```bash
+git add .
+git commit -m "feat: Cloudflare Pages対応"
+git push origin main
+```
+
+---
+
 ## 🔧 設定オプション
 
 Bald Eagleは以下の追加設定オプションを提供します：

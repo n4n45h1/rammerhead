@@ -1,0 +1,3 @@
+/proxy/* /api/proxy/:splat 200
+/session/* /api/session/:splat 200
+/rammerhead/* /api/rammerhead/:splat 200

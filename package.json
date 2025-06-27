@@ -7,11 +7,15 @@
     "preinstall": "npm install --package-lock-only --ignore-scripts && npx npm-force-resolutions",
     "start": "node src/server.js",
     "build": "node src/build.js",
+    "build:pages": "npm run build && npm run prepare:pages",
+    "prepare:pages": "node scripts/prepare-pages.js",
     "bstart": "npm run build && npm run start",
     "test": "npm run format && npm run lint && npm run build",
     "lint": "eslint -c .eslintrc.json --ext .js src",
     "format": "prettier --write 'src/**/*.js'",
-    "clientes5": "es-check es5 src/client/*.js public/**/*.js"
+    "clientes5": "es-check es5 src/client/*.js public/**/*.js",
+    "deploy:pages": "wrangler pages deploy public --project-name bald-eagle-proxy",
+    "dev:pages": "wrangler pages dev public"
   },
   "repository": {
     "type": "git",

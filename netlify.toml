@@ -1,0 +1,41 @@
+# Cloudflare Pages自動デプロイ用設定
+# このファイルはPages設定に自動的に使用されます
+
+# ビルド設定
+[build]
+  command = "npm run build:pages"
+  publish = "public"
+
+# ビルド環境
+[build.environment]
+  NODE_VERSION = "18"
+  NPM_VERSION = "latest"
+
+# Headers設定（セキュリティ強化）
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+# プロキシ用特別ヘッダー
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type, Authorization, X-Requested-With"
+
+# リダイレクト設定
+[[redirects]]
+  from = "/proxy/*"
+  to = "/api/proxy/:splat"
+  status = 301
+
+[[redirects]]
+  from = "/session/*"
+  to = "/api/session/:splat"
+  status = 301
